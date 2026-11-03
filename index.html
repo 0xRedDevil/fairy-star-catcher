@@ -37,6 +37,7 @@
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none;
             background: radial-gradient(circle at 50% 30%, #2c1654 0%, #130726 100%);
         }
         .ui-screen {
@@ -293,14 +294,7 @@
                 const data = localStorage.getItem('fairy_star_leaderboard');
                 if (data) return JSON.parse(data);
             } catch (e) {}
-            // Default placeholder scores
-            return [
-                { name: "Sparkle", score: 25 },
-                { name: "Luna", score: 18 },
-                { name: "Stella", score: 12 },
-                { name: "Aria", score: 8 },
-                { name: "Nova", score: 5 }
-            ];
+            return [];
         }
 
         function saveLeaderboard(lb) {
@@ -313,6 +307,13 @@
             const listEl = document.getElementById(elementId);
             const lb = getLeaderboard();
             listEl.innerHTML = '';
+            if (lb.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'lb-item';
+                li.innerHTML = '<span class="lb-name" style="text-align: center;">No scores yet. Be the first! ⭐</span>';
+                listEl.appendChild(li);
+                return;
+            }
             lb.forEach((entry, index) => {
                 const li = document.createElement('li');
                 li.className = 'lb-item';
@@ -437,7 +438,7 @@
             const lowestScore = lb.length < 5 ? 0 : lb[lb.length - 1].score;
 
             const hsSection = document.getElementById('new-high-score-section');
-            if (score > lowestScore || lb.length < 5) {
+            if (score > 0 && (score > lowestScore || lb.length < 5)) {
                 hsSection.classList.remove('hidden');
                 document.getElementById('player-name').value = '';
             } else {
@@ -625,27 +626,27 @@
         }
 
         // Shape helper functions
-        function drawStar(ctx, cx, outerRadius, innerRadius, spikes, color1, color2) {
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, color1, color2) {
             // simplified star drawer
             ctx.fillStyle = color1;
             ctx.beginPath();
             let rot = Math.PI / 2 * 3;
-            let x = cx, y = 0;
+            let x = cx, y = cy;
             let step = Math.PI / spikes;
 
-            ctx.moveTo(cx, 0 - outerRadius);
+            ctx.moveTo(cx, cy - outerRadius);
             for (let i = 0; i < spikes; i++) {
                 x = cx + Math.cos(rot) * outerRadius;
-                y = 0 + Math.sin(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
                 ctx.lineTo(x, y);
                 rot += step;
 
                 x = cx + Math.cos(rot) * innerRadius;
-                y = 0 + Math.sin(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
                 ctx.lineTo(x, y);
                 rot += step;
             }
-            ctx.lineTo(cx, 0 - outerRadius);
+            ctx.lineTo(cx, cy - outerRadius);
             ctx.closePath();
             ctx.fill();
         }
